@@ -3,6 +3,22 @@ import pandas as pd
 import numpy as np
 import altair as alt
 
+# Add custom background and padding
+st.markdown(
+    """
+    <style>
+        .main {
+            background-color: #f5f5f5;
+        }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
 
@@ -20,7 +36,12 @@ fig1 = alt.Chart(nat_df).mark_bar().encode(
     color='Category',
     tooltip=['Category', 'Total', 'Percentage']
 ).properties(title="Total Stakeholders by Category")
-labels1 = alt.Chart(nat_df).mark_text(align='center', dy=-10).encode(
+labels1 = alt.Chart(nat_df).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000')
+).encode(
     x='Category',
     y='Total',
     text=alt.Text('Percentage:Q', format='.1f')
@@ -46,14 +67,38 @@ fig2 = alt.Chart(long_gender).mark_bar().encode(
     color='Gender',
     tooltip=['Category', 'Gender', 'Count', 'Percentage']
 )
-labels2 = alt.Chart(long_gender).mark_text(align='center', dy=-10).encode(
+labels2 = alt.Chart(long_gender).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000'),
+    detail='Gender'
+).encode(
     x='Category',
     y='Count',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black'),
-    detail='Gender'
+    text=alt.Text('Percentage:Q', format='.1f')
 )
 st.altair_chart(fig2 + labels2, use_container_width=True)
+
+# Pie Chart Helper
+def pie_chart(df, value_field, category_field, title):
+    base = alt.Chart(df).mark_arc(innerRadius=50).encode(
+        theta=value_field,
+        color=category_field,
+        tooltip=[category_field, value_field, 'Percentage']
+    ).properties(title=title)
+    
+    text = alt.Chart(df).mark_text(
+        radius=100,
+        size=12,
+        fontWeight='bold',
+        color=alt.value('#000000')
+    ).encode(
+        theta=alt.Theta(value_field, stack=True),
+        text=alt.Text('Percentage:Q', format='.1f')
+    )
+    
+    return base + text
 
 # 3. Work Experience
 st.header("3. 💼 Work Experience")
@@ -63,17 +108,7 @@ data_exp = pd.DataFrame({
 })
 data_exp["Percentage"] = data_exp["Truck Driver"] / data_exp["Truck Driver"].sum() * 100
 st.dataframe(data_exp)
-fig3 = alt.Chart(data_exp).mark_arc(innerRadius=50).encode(
-    theta='Truck Driver',
-    color='Work Experience',
-    tooltip=['Work Experience', 'Truck Driver', 'Percentage']
-).properties(title="Truck Driver Work Experience (Pie Chart)")
-text3 = alt.Chart(data_exp).mark_text(radius=80, size=12).encode(
-    theta=alt.Theta('Truck Driver', stack=True),
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
-)
-st.altair_chart(fig3 + text3)
+st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience (Pie Chart)"))
 
 # 4. Gate Visit Frequency
 st.header("4. 🚪 Gate Visit Frequency")
@@ -83,17 +118,7 @@ data_visits = pd.DataFrame({
 })
 data_visits["Percentage"] = data_visits['Truck Driver'] / data_visits['Truck Driver'].sum() * 100
 st.dataframe(data_visits)
-fig4 = alt.Chart(data_visits).mark_arc(innerRadius=50).encode(
-    theta='Truck Driver',
-    color='Frequency',
-    tooltip=['Frequency', 'Truck Driver', 'Percentage']
-).properties(title="Gate Visit Frequency (Pie Chart)")
-text4 = alt.Chart(data_visits).mark_text(radius=80, size=12).encode(
-    theta=alt.Theta('Truck Driver', stack=True),
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
-)
-st.altair_chart(fig4 + text4)
+st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency (Pie Chart)"))
 
 # 5. Traffic Congestion Experience
 st.header("5. 🚦 Traffic Congestion Experience")
@@ -103,17 +128,7 @@ data_congestion = pd.DataFrame({
 })
 data_congestion["Percentage"] = data_congestion['Truck Drivers'] / data_congestion['Truck Drivers'].sum() * 100
 st.dataframe(data_congestion)
-fig5 = alt.Chart(data_congestion).mark_arc(innerRadius=50).encode(
-    theta='Truck Drivers',
-    color='Experience',
-    tooltip=['Experience', 'Truck Drivers', 'Percentage']
-).properties(title="Truck Driver Congestion Experience (Pie Chart)")
-text5 = alt.Chart(data_congestion).mark_text(radius=80, size=12).encode(
-    theta=alt.Theta('Truck Drivers', stack=True),
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
-)
-st.altair_chart(fig5 + text5)
+st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Truck Driver Congestion Experience (Pie Chart)"))
 
 # 6. Waiting Time per Visit
 st.header("6. ⏱ Waiting Time at Gates")
@@ -123,17 +138,7 @@ data_wait = pd.DataFrame({
 })
 data_wait["Percentage"] = data_wait['Truck Drivers'] / data_wait['Truck Drivers'].sum() * 100
 st.dataframe(data_wait)
-fig6 = alt.Chart(data_wait).mark_arc(innerRadius=50).encode(
-    theta='Truck Drivers',
-    color='Time Category',
-    tooltip=['Time Category', 'Truck Drivers', 'Percentage']
-).properties(title="Waiting Time Distribution (Pie Chart)")
-text6 = alt.Chart(data_wait).mark_text(radius=80, size=12).encode(
-    theta=alt.Theta('Truck Drivers', stack=True),
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
-)
-st.altair_chart(fig6 + text6)
+st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution (Pie Chart)"))
 
 # 7. Gate Usage Distribution
 st.header("7. 🛣 Gate Usage Distribution")
@@ -149,7 +154,12 @@ fig7 = alt.Chart(data_gate).mark_bar().encode(
     color='Gate',
     tooltip=['Gate', 'Truck Drivers', 'Percentage']
 ).properties(title="Gate Usage Distribution")
-labels7 = alt.Chart(data_gate).mark_text(align='center', dy=-10).encode(
+labels7 = alt.Chart(data_gate).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000')
+).encode(
     x='Gate',
     y='Truck Drivers',
     text=alt.Text('Percentage:Q', format='.1f')
@@ -170,7 +180,12 @@ fig8 = alt.Chart(data_time_congestion).mark_bar().encode(
     color='Time',
     tooltip=['Time', 'Truck Drivers', 'Percentage']
 ).properties(title="Congestion Time by Day Period")
-labels8 = alt.Chart(data_time_congestion).mark_text(align='center', dy=-10).encode(
+labels8 = alt.Chart(data_time_congestion).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000')
+).encode(
     x='Time',
     y='Truck Drivers',
     text=alt.Text('Percentage:Q', format='.1f')
@@ -181,7 +196,7 @@ st.altair_chart(fig8 + labels8, use_container_width=True)
 st.header("9. ❗ Causes of Traffic Congestion")
 data_causes = pd.DataFrame({
     'Cause': [
-        'Slow gate processing', 'Slow security checks', 'Documentation delays', 
+        'Slow gate processing', 'Slow security checks', 'Documentation delays',
         'KRA gadget delay', 'Poor road', 'Incomplete docs', 'Limited lanes'
     ],
     'Truck Drivers': [440, 377, 302, 316, 50, 40, 30]
@@ -194,7 +209,12 @@ fig9 = alt.Chart(data_causes).mark_bar().encode(
     color='Cause',
     tooltip=['Cause', 'Truck Drivers', 'Percentage']
 ).properties(title="Causes of Traffic Congestion")
-labels9 = alt.Chart(data_causes).mark_text(align='center', dy=-10).encode(
+labels9 = alt.Chart(data_causes).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000')
+).encode(
     x='Cause',
     y='Truck Drivers',
     text=alt.Text('Percentage:Q', format='.1f')
@@ -218,7 +238,12 @@ fig10 = alt.Chart(data_effects).mark_bar().encode(
     color='Effect',
     tooltip=['Effect', 'Truck Drivers', 'Percentage']
 ).properties(title="Effects of Congestion on Work")
-labels10 = alt.Chart(data_effects).mark_text(align='center', dy=-10).encode(
+labels10 = alt.Chart(data_effects).mark_text(
+    align='center',
+    dy=-15,
+    fontWeight='bold',
+    color=alt.value('#000000')
+).encode(
     x='Effect',
     y='Truck Drivers',
     text=alt.Text('Percentage:Q', format='.1f')
