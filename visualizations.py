@@ -1,512 +1,273 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-from matplotlib.ticker import MaxNLocator
+import altair as alt
 
-# Set up the page
-st.set_page_config(layout="wide", page_title="KPA Gate Comprehensive Dashboard")
+st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 
-# Title and sidebar
-st.title("KPA Gate Operations Comprehensive Dashboard")
-st.sidebar.title("Navigation")
-
-# Create navigation
-page = st.sidebar.radio("Select Analysis Page:", [
-    "Stakeholder Overview",
-    "Gender Distribution",
-    "Work Experience",
-    "Gate Visit Frequency",
-    "Traffic Congestion",
-    "Waiting Time Analysis",
-    "Gate Utilization",
-    "Congestion Timing",
-    "Congestion Causes",
-    "Work Impact Analysis"
-])
-
-# Page 1: Stakeholder Overview
-if page == "Stakeholder Overview":
-    st.header("FY2025/26 Stakeholder Overview - KPA Gate Analysis")
-    
-    # Data
-    data = {
-        'Category': ['Truck Driver', 'Clearing Agents', 'Custom Officials', 'KPA Staffs', 'Traffic Police'],
-        'Total (n)': [714, 113, 10, 22, 9],
-        '% Kenyans': [88.4, 96.5, 100, 100, 100]
+# Custom background
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f5f5;
     }
-
-    regional_data_truck = {
-        'Uganda': 6.2,
-        'Tanzania': 2.2,
-        'South Sudan': 0.3,
-        'Rwanda': 1.0,
-        'Burundi': 0.8,
-        'DRC Congo': 1.1
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
+</style>
+""", unsafe_allow_html=True)
 
-    regional_data_clearing = {
-        'Uganda': 0.9,
-        'Tanzania': 1.8,
-        'Rwanda': 0.9
-    }
+st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
 
-    df = pd.DataFrame(data)
+def pie_chart(df, value_field, category_field, title):
+    chart = alt.Chart(df).mark_arc(innerRadius=50).encode(
+        theta=value_field,
+        color=category_field,
+        tooltip=[category_field, value_field, 'Percentage']
+    ).properties(title=title)
 
-    # Display data
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Stakeholder Summary")
-        st.dataframe(df)
-        
-        # Bar chart
-        st.subheader("Total Count and % Kenyans per Category")
-        fig, ax1 = plt.subplots(figsize=(10, 6))
-        ax1.bar(df['Category'], df['Total (n)'], color='skyblue', label='Total (n)')
-        ax2 = ax1.twinx()
-        ax2.plot(df['Category'], df['% Kenyans'], color='orange', marker='o', label='% Kenyans')
-        ax1.set_ylabel('Total Count')
-        ax2.set_ylabel('% Kenyans')
-        ax1.set_xticklabels(df['Category'], rotation=45)
-        ax1.legend(loc='upper left')
-        ax2.legend(loc='upper right')
-        st.pyplot(fig)
+    text = alt.Chart(df).mark_text(radius=100, size=12, color='black').encode(
+        theta=alt.Theta(value_field, stack=True),
+        text=alt.Text('Percentage:Q', format='.1f')
+    )
+    return chart + text
 
-    with col2:
-        # Pie charts
-        st.subheader("Regional Representation (Non-Kenyans)")
-        
-        st.markdown("Truck Drivers - Regional Breakdown")
-        fig1, ax1 = plt.subplots()
-        ax1.pie(regional_data_truck.values(), labels=regional_data_truck.keys(), autopct='%1.1f%%', startangle=140)
-        ax1.axis('equal')
-        st.pyplot(fig1)
-        
-        st.markdown("Clearing Agents - Regional Breakdown")
-        fig2, ax2 = plt.subplots()
-        ax2.pie(regional_data_clearing.values(), labels=regional_data_clearing.keys(), autopct='%1.1f%%', startangle=140)
-        ax2.axis('equal')
-        st.pyplot(fig2)
+# 1. Nationality Distribution
+st.header("1. 🌍 Nationality & Regional Representation")
+nat_df = pd.DataFrame({
+    'Category': ['Truck Driver', 'Clearing Agents', 'Custom Officials', 'KPA Staffs', 'Traffic Police'],
+    'Total': [714, 113, 10, 22, 9],
+})
+nat_df["Percentage"] = nat_df["Total"] / nat_df["Total"].sum() * 100
+st.dataframe(nat_df)
 
-# Page 2: Gender Distribution
-elif page == "Gender Distribution":
-    st.header("Gender Distribution Across Categories")
-    
-    # Data
-    data = {
-        "Category": ["Truck Drivers", "Clearing Agents", "Customs Officials", "KPA Staff"],
-        "Male": [700, 119, 7, 14],
-        "Female": [14, 5, 3, 8],
-        "Total": [714, 124, 10, 22],
-        "% Male": [98.0, 96.0, 70.0, 63.6],
-        "% Female": [2.0, 4.0, 30.0, 36.4]
-    }
+fig1 = alt.Chart(nat_df).mark_bar().encode(
+    x=alt.X('Category', sort='-y'),
+    y='Total',
+    color='Category',
+    tooltip=['Category', 'Total', 'Percentage']
+).properties(title="Total Stakeholders by Category")
 
-    df = pd.DataFrame(data)
+labels1 = alt.Chart(nat_df).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Category',
+    y='Total',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    # Display the raw data
-    with st.expander("View Raw Data"):
-        st.dataframe(df)
+st.altair_chart(fig1 + labels1, use_container_width=True)
 
-    # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Bar Chart", "Pie Charts", "Percentage Comparison", "Stacked Bar Chart"])
+# 2. Gender Category
+st.header("2. 👤 Gender Distribution")
+gender_split = pd.DataFrame({
+    'Category': ['Truck Drivers', 'Clearing Agents', 'Customs Officials', 'KPA Staff'],
+    'Male': [700, 119, 7, 14],
+    'Female': [14, 5, 3, 8]
+})
+gender_split['Total'] = gender_split['Male'] + gender_split['Female']
+gender_split['% Male'] = (gender_split['Male'] / gender_split['Total']) * 100
+gender_split['% Female'] = 100 - gender_split['% Male']
+st.dataframe(gender_split)
 
-    with tab1:
-        st.subheader("Count by Gender and Category")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        df_melted = df.melt(id_vars="Category", value_vars=["Male", "Female"], 
-                            var_name="Gender", value_name="Count")
-        sns.barplot(data=df_melted, x="Category", y="Count", hue="Gender", ax=ax)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        ax.set_title("Count of Males and Females by Category")
-        st.pyplot(fig)
+long_gender = gender_split.melt(id_vars='Category', value_vars=['Male', 'Female'],
+                                var_name='Gender', value_name='Count')
+long_gender["Percentage"] = long_gender.groupby('Category')['Count'].transform(
+    lambda x: 100 * x / x.sum())
 
-    with tab2:
-        st.subheader("Gender Distribution per Category")
-        cols = st.columns(2)
-        
-        for i, category in enumerate(df["Category"]):
-            with cols[i % 2]:
-                fig, ax = plt.subplots(figsize=(6, 6))
-                sizes = [df.loc[i, "% Male"], df.loc[i, "% Female"]]
-                labels = ["Male", "Female"]
-                ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-                ax.set_title(f"{category} Gender Distribution")
-                st.pyplot(fig)
+fig2 = alt.Chart(long_gender).mark_bar().encode(
+    x='Category',
+    y='Count',
+    color='Gender',
+    tooltip=['Category', 'Gender', 'Count', 'Percentage']
+)
 
-    with tab3:
-        st.subheader("Percentage Comparison")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        df_melted_pct = df.melt(id_vars="Category", value_vars=["% Male", "% Female"], 
-                                var_name="Gender", value_name="Percentage")
-        sns.barplot(data=df_melted_pct, x="Category", y="Percentage", hue="Gender", ax=ax)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        ax.set_title("Percentage of Males and Females by Category")
-        ax.set_ylim(0, 100)
-        st.pyplot(fig)
+labels2 = alt.Chart(long_gender).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Category',
+    y='Count',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    with tab4:
-        st.subheader("Stacked Bar Chart")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        df[["Category", "Male", "Female"]].set_index("Category").plot(
-            kind="bar", stacked=True, ax=ax)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        ax.set_title("Stacked Count of Males and Females by Category")
-        ax.set_ylabel("Count")
-        st.pyplot(fig)
+st.altair_chart(fig2 + labels2, use_container_width=True)
 
-# Page 3: Work Experience
-elif page == "Work Experience":
-    st.header("Work Experience Distribution Across Categories")
-    
-    # Data
-    data = {
-        "Category": ["Truck Driver", "Clearing Agents", "Custom Officials", "KPA Staff Traffic Police", "Unknown"],
-        "less than 1 year": [43, 3, 11, 2, 4],
-        "1-5 years": [210, 2, 50, 1, 5],
-        "6-10 years": [133, 1, 25, 8, 0],
-        "over 10 years": [328, 4, 38, 11, 0],
-        "% less than 1 year": [6.0, 30.0, 8.9, 9.1, 44.4],
-        "% 1-5 years": [29.4, 20.0, 40.3, 4.5, 55.6],
-        "% 6-10 years": [18.6, 10.0, 20.2, 36.4, 0.0],
-        "% over 10 years": [45.9, 40.0, 30.6, 50.0, 0.0]
-    }
+# 3. Work Experience
+st.header("3. 💼 Work Experience")
+data_exp = pd.DataFrame({
+    'Work Experience': ['<1 year', '1-5 years', '6-10 years', '>10 years'],
+    'Truck Driver': [43, 210, 133, 328]
+})
+data_exp["Percentage"] = data_exp["Truck Driver"] / data_exp["Truck Driver"].sum() * 100
+st.dataframe(data_exp)
+st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience (Pie Chart)"))
 
-    df = pd.DataFrame(data)
+# 4. Gate Visit Frequency
+st.header("4. 🚪 Gate Visit Frequency")
+data_visits = pd.DataFrame({
+    'Frequency': ['Daily', '2-3 times/week', 'Once a week', '1-3 times/month', '< Once a month'],
+    'Truck Driver': [285, 176, 105, 138, 10]
+})
+data_visits["Percentage"] = data_visits['Truck Driver'] / data_visits['Truck Driver'].sum() * 100
+st.dataframe(data_visits)
+st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency (Pie Chart)"))
 
-    # Display the raw data
-    with st.expander("View Raw Data"):
-        st.dataframe(df)
+# 5. Traffic Congestion Experience
+st.header("5. 🚦 Traffic Congestion Experience")
+data_congestion = pd.DataFrame({
+    'Experience': ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
+    'Truck Drivers': [15, 48, 216, 190, 245]
+})
+data_congestion["Percentage"] = data_congestion['Truck Drivers'] / data_congestion['Truck Drivers'].sum() * 100
+st.dataframe(data_congestion)
+st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Truck Driver Congestion Experience (Pie Chart)"))
 
-    # Create tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Count Bar Chart", "Percentage Heatmap", "Stacked Percentage", "Experience Distribution"])
+# 6. Waiting Time per Visit
+st.header("6. ⏱ Waiting Time at Gates")
+data_wait = pd.DataFrame({
+    'Time Category': ['<30 mins', '30 mins-1 hr', '1-2 hrs', '2-5 hrs', '>5 hrs'],
+    'Truck Drivers': [87, 98, 119, 185, 245]
+})
+data_wait["Percentage"] = data_wait['Truck Drivers'] / data_wait['Truck Drivers'].sum() * 100
+st.dataframe(data_wait)
+st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution (Pie Chart)"))
 
-    with tab1:
-        st.subheader("Count by Experience Level and Category")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        
-        count_cols = ["less than 1 year", "1-5 years", "6-10 years", "over 10 years"]
-        df_melted = df.melt(id_vars="Category", value_vars=count_cols, 
-                            var_name="Experience", value_name="Count")
-        
-        sns.barplot(data=df_melted, x="Category", y="Count", hue="Experience", ax=ax)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        ax.set_title("Count of Employees by Experience Level and Category")
-        ax.legend(title="Experience Level")
-        st.pyplot(fig)
+# 7. Gate Usage Distribution
+st.header("7. 🛣 Gate Usage Distribution")
+data_gate = pd.DataFrame({
+    'Gate': ['Gate 24', 'Gate 18', 'Main Gate 9/10', 'ICD', 'Others (12,13,15,16)'],
+    'Truck Drivers': [475, 308, 93, 0, 0]
+})
+data_gate["Percentage"] = data_gate['Truck Drivers'] / data_gate['Truck Drivers'].sum() * 100
+st.dataframe(data_gate)
 
-    with tab2:
-        st.subheader("Percentage Distribution Heatmap")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        pct_cols = ["% less than 1 year", "% 1-5 years", "% 6-10 years", "% over 10 years"]
-        pct_data = df[["Category"] + pct_cols].set_index("Category")
-        pct_data.columns = [col.replace("% ", "") for col in pct_data.columns]
-        
-        sns.heatmap(pct_data, annot=True, fmt=".1f", cmap="YlGnBu", ax=ax)
-        ax.set_title("Percentage Distribution of Experience Levels by Category")
-        ax.set_xlabel("Experience Level")
-        st.pyplot(fig)
+fig7 = alt.Chart(data_gate).mark_bar().encode(
+    x='Gate',
+    y='Truck Drivers',
+    color='Gate',
+    tooltip=['Gate', 'Truck Drivers', 'Percentage']
+).properties(title="Gate Usage Distribution")
 
-    with tab3:
-        st.subheader("Stacked Percentage Bar Chart")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        
-        pct_data.plot(kind="bar", stacked=True, ax=ax)
-        ax.set_xticklabels(pct_data.index, rotation=45)
-        ax.set_ylabel("Percentage")
-        ax.set_title("Percentage Distribution of Experience Levels (Stacked)")
-        ax.legend(title="Experience Level", bbox_to_anchor=(1.05, 1), loc='upper left')
-        st.pyplot(fig)
+labels7 = alt.Chart(data_gate).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Gate',
+    y='Truck Drivers',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    with tab4:
-        st.subheader("Experience Distribution per Category")
-        
-        cols = st.columns(2)
-        experience_levels = ["less than 1 year", "1-5 years", "6-10 years", "over 10 years"]
-        colors = sns.color_palette("pastel")[:4]
-        
-        for i, category in enumerate(df["Category"]):
-            with cols[i % 2]:
-                fig, ax = plt.subplots(figsize=(6, 6))
-                sizes = [df.loc[i, f"% {level}"] for level in experience_levels]
-                
-                if sum(sizes) > 0:
-                    ax.pie(sizes, labels=experience_levels, autopct='%1.1f%%', 
-                          colors=colors, startangle=90)
-                    ax.set_title(f"{category} Experience Distribution")
-                    st.pyplot(fig)
-                else:
-                    st.write(f"No data for {category}")
+st.altair_chart(fig7 + labels7, use_container_width=True)
 
-# Page 4: Gate Visit Frequency
-elif page == "Gate Visit Frequency":
-    st.header("Gate Visit Frequency Analysis")
-    
-    # Data
-    data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS", "CUSTOM OFFICIAL", "TRAFFIC POLICE", "KPA STAFF"],
-        "DAILY": [285, 80, 4, 9, 8],
-        "SEVERAL TIMES A WEEK(2-3TIMES)": [176, 35, 3, 0, 14],
-        "ONCE A WEEK": [105, 5, 1, 0, 0],
-        "A FEW TIMES A MONTH (1-3 TIMES)": [138, 4, 1, 0, 0],
-        "RARELY LESS THAN ONCE A MONTH": [10, 0, 1, 0, 0]
-    }
+# 8. Congestion Time Frequency
+st.header("8. 🕐 Time of Day with Most Congestion")
+data_time_congestion = pd.DataFrame({
+    'Time': ['Morning', 'Midday', 'Afternoon', 'Evening'],
+    'Truck Drivers': [150, 219, 480, 368]
+})
+data_time_congestion["Percentage"] = data_time_congestion['Truck Drivers'] / data_time_congestion['Truck Drivers'].sum() * 100
+st.dataframe(data_time_congestion)
 
-    percent_data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS", "CUSTOM OFFICIAL", "TRAFFIC POLICE", "KPA STAFF"],
-        "DAILY": [39.9, 64.5, 40, 100, 36.4],
-        "SEVERAL TIMES A WEEK(2-3TIMES)": [24.6, 28.2, 30, 0, 63.6],
-        "ONCE A WEEK": [14.7, 4, 10, 0, 0],
-        "A FEW TIMES A MONTH (1-3 TIMES)": [19.3, 3.2, 10, 0, 0],
-        "RARELY LESS THAN ONCE A MONTH": [1.4, 0, 10, 0, 0]
-    }
+fig8 = alt.Chart(data_time_congestion).mark_bar().encode(
+    x='Time',
+    y='Truck Drivers',
+    color='Time',
+    tooltip=['Time', 'Truck Drivers', 'Percentage']
+).properties(title="Congestion Time by Day Period")
 
-    df_counts = pd.DataFrame(data)
-    df_percents = pd.DataFrame(percent_data)
+labels8 = alt.Chart(data_time_congestion).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Time',
+    y='Truck Drivers',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    # Melt the data
-    melted_counts = df_counts.melt(id_vars="Category", var_name="Frequency", value_name="Count")
-    melted_percents = df_percents.melt(id_vars="Category", var_name="Frequency", value_name="Percentage")
-    combined_df = melted_counts.merge(melted_percents, on=["Category", "Frequency"])
+st.altair_chart(fig8 + labels8, use_container_width=True)
 
-    # Visualization section
-    tab1, tab2, tab3, tab4 = st.tabs(["Stacked Bar Chart (Counts)", "Stacked Bar Chart (Percentages)", 
-                                      "Heatmap", "Grouped Bar Charts"])
+# 9. Causes of Traffic Congestion
+st.header("9. ❗ Causes of Traffic Congestion")
+data_causes = pd.DataFrame({
+    'Cause': [
+        'Slow gate processing', 'Slow security checks', 'Documentation delays',
+        'KRA gadget delay', 'Poor road', 'Incomplete docs', 'Limited lanes'
+    ],
+    'Truck Drivers': [440, 377, 302, 316, 50, 40, 30]
+})
+data_causes["Percentage"] = data_causes['Truck Drivers'] / data_causes['Truck Drivers'].sum() * 100
+st.dataframe(data_causes)
 
-    with tab1:
-        st.subheader("Visit Frequency by Category (Counts)")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        melted_counts.pivot(index="Category", columns="Frequency", values="Count").plot(
-            kind='bar', stacked=True, ax=ax)
-        plt.xticks(rotation=45)
-        plt.ylabel("Number of Visits")
-        plt.xlabel("Category")
-        plt.legend(title="Visit Frequency", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        st.pyplot(fig)
+fig9 = alt.Chart(data_causes).mark_bar().encode(
+    x='Cause',
+    y='Truck Drivers',
+    color='Cause',
+    tooltip=['Cause', 'Truck Drivers', 'Percentage']
+).properties(title="Causes of Traffic Congestion")
 
-    with tab2:
-        st.subheader("Visit Frequency by Category (Percentages)")
-        fig, ax = plt.subplots(figsize=(12, 6))
-        melted_percents.pivot(index="Category", columns="Frequency", values="Percentage").plot(
-            kind='bar', stacked=True, ax=ax)
-        plt.xticks(rotation=45)
-        plt.ylabel("Percentage (%)")
-        plt.xlabel("Category")
-        plt.legend(title="Visit Frequency", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        st.pyplot(fig)
+labels9 = alt.Chart(data_causes).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Cause',
+    y='Truck Drivers',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    with tab3:
-        st.subheader("Visit Frequency Heatmap")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        pivot_counts = melted_counts.pivot(index="Category", columns="Frequency", values="Count")
-        sns.heatmap(pivot_counts, annot=True, fmt="d", cmap="YlGnBu", ax=ax)
-        plt.xticks(rotation=45)
-        plt.title("Visit Counts by Category and Frequency")
-        plt.tight_layout()
-        st.pyplot(fig)
+st.altair_chart(fig9 + labels9, use_container_width=True)
 
-    with tab4:
-        st.subheader("Grouped Bar Charts")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("Counts")
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=melted_counts, x="Category", y="Count", hue="Frequency", ax=ax)
-            plt.xticks(rotation=45)
-            plt.ylabel("Number of Visits")
-            plt.xlabel("Category")
-            plt.legend(title="Visit Frequency", bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.tight_layout()
-            st.pyplot(fig)
-        
-        with col2:
-            st.markdown("Percentages")
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.barplot(data=melted_percents, x="Category", y="Percentage", hue="Frequency", ax=ax)
-            plt.xticks(rotation=45)
-            plt.ylabel("Percentage (%)")
-            plt.xlabel("Category")
-            plt.legend(title="Visit Frequency", bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.tight_layout()
-            st.pyplot(fig)
+# 10. Effects of Congestion
+st.header("10. 📉 Effects of Congestion on Work")
+data_effects = pd.DataFrame({
+    'Effect': [
+        'Longer working hours', 'Increased storage fees', 'Missed delivery schedules',
+        'Increased fuel costs', 'Increased turnaround times'
+    ],
+    'Truck Drivers': [562, 386, 258, 305, 183]
+})
+data_effects["Percentage"] = data_effects['Truck Drivers'] / data_effects['Truck Drivers'].sum() * 100
+st.dataframe(data_effects)
 
-# Page 5: Traffic Congestion
-elif page == "Traffic Congestion":
-    st.header("Traffic Congestion Experience Analysis")
-    
-    # Data
-    data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS"],
-        "NEVER": [15, 0],
-        "RARELY": [48, 6],
-        "SOMETIMES": [216, 58],
-        "OFTEN": [190, 39],
-        "ALWAYS": [245, 21]
-    }
+fig10 = alt.Chart(data_effects).mark_bar().encode(
+    x='Effect',
+    y='Truck Drivers',
+    color='Effect',
+    tooltip=['Effect', 'Truck Drivers', 'Percentage']
+).properties(title="Effects of Congestion on Work")
 
-    percent_data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS"],
-        "NEVER": [2.1, 0],
-        "RARELY": [6.7, 4.8],
-        "SOMETIMES": [30.3, 46.8],
-        "OFTEN": [26.6, 31.5],
-        "ALWAYS": [34.3, 16.9]
-    }
+labels10 = alt.Chart(data_effects).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
+    x='Effect',
+    y='Truck Drivers',
+    text=alt.Text('Percentage:Q', format='.1f')
+)
 
-    df_counts = pd.DataFrame(data)
-    df_percents = pd.DataFrame(percent_data)
-
-    # Melt the data
-    melted_counts = df_counts.melt(id_vars="Category", var_name="Experience", value_name="Count")
-    melted_percents = df_percents.melt(id_vars="Category", var_name="Experience", value_name="Percentage")
-    combined_df = melted_counts.merge(melted_percents, on=["Category", "Experience"])
-
-    # Order the experience levels
-    experience_order = ["NEVER", "RARELY", "SOMETIMES", "OFTEN", "ALWAYS"]
-    melted_counts["Experience"] = pd.Categorical(melted_counts["Experience"], categories=experience_order, ordered=True)
-    melted_percents["Experience"] = pd.Categorical(melted_percents["Experience"], categories=experience_order, ordered=True)
-
-    # Visualization section
-    tab1, tab2, tab3, tab4 = st.tabs(["Stacked Bar Chart (Counts)", "Stacked Bar Chart (Percentages)", 
-                                      "Heatmap", "Grouped Bar Charts"])
-
-    with tab1:
-        st.subheader("Traffic Experience by Category (Counts)")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        melted_counts.pivot(index="Category", columns="Experience", values="Count").plot(
-            kind='bar', stacked=True, ax=ax, color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'])
-        plt.xticks(rotation=0)
-        plt.ylabel("Number of Respondents")
-        plt.xlabel("Category")
-        plt.legend(title="Traffic Experience", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        st.pyplot(fig)
-
-    with tab2:
-        st.subheader("Traffic Experience by Category (Percentages)")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        melted_percents.pivot(index="Category", columns="Experience", values="Percentage").plot(
-            kind='bar', stacked=True, ax=ax, color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'])
-        plt.xticks(rotation=0)
-        plt.ylabel("Percentage (%)")
-        plt.xlabel("Category")
-        plt.legend(title="Traffic Experience", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        st.pyplot(fig)
-
-    with tab3:
-        st.subheader("Traffic Experience Heatmap")
-        fig, ax = plt.subplots(figsize=(8, 4))
-        pivot_counts = melted_counts.pivot(index="Category", columns="Experience", values="Count")
-        sns.heatmap(pivot_counts, annot=True, fmt="d", cmap="YlOrRd", ax=ax)
-        plt.title("Traffic Experience Counts by Category")
-        plt.tight_layout()
-        st.pyplot(fig)
-
-    with tab4:
-        st.subheader("Grouped Bar Charts")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("Counts")
-            fig, ax = plt.subplots(figsize=(8, 5))
-            sns.barplot(data=melted_counts, x="Category", y="Count", hue="Experience", 
-                        palette=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'], ax=ax)
-            plt.ylabel("Number of Respondents")
-            plt.xlabel("Category")
-            plt.legend(title="Traffic Experience", bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.tight_layout()
-            st.pyplot(fig)
-        
-        with col2:
-            st.markdown("Percentages")
-            fig, ax = plt.subplots(figsize=(8, 5))
-            sns.barplot(data=melted_percents, x="Category", y="Percentage", hue="Experience", 
-                        palette=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'], ax=ax)
-            plt.ylabel("Percentage (%)")
-            plt.xlabel("Category")
-            plt.legend(title="Traffic Experience", bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.tight_layout()
-            st.pyplot(fig)
-
-# Page 6: Waiting Time Analysis
-elif page == "Waiting Time Analysis":
-    st.header("Waiting Time at KPA Gates per Visit")
-    
-    # Data
-    data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS"],
-        "Less than 30 mins": [87, 27],
-        "30 mins-1 hr": [98, 23],
-        "1-2 hrs": [119, 26],
-        "2-5 hrs": [185, 24],
-        "Over 5 hours": [225, 24]
-    }
-
-    percent_data = {
-        "Category": ["TRUCK DRIVER", "CLEARING AGENTS"],
-        "Less than 30 mins": [12.2, 21.8],
-        "30 mins-1 hr": [13.7, 18.5],
-        "1-2 hrs": [16.7, 21.0],
-        "2-5 hrs": [25.9, 19.4],
-        "Over 5 hours": [31.5, 19.4]
-    }
-
-    df_counts = pd.DataFrame(data)
-    df_percents = pd.DataFrame(percent_data)
-
-    # Melt the data
-    melted_counts = df_counts.melt(id_vars="Category", var_name="Waiting Time", value_name="Count")
-    melted_percents = df_percents.melt(id_vars="Category", var_name="Waiting Time", value_name="Percentage")
-
-    # Order the waiting time categories
-    waiting_order = ["Less than 30 mins", "30 mins-1 hr", "1-2 hrs", "2-5 hrs", "Over 5 hours"]
-    melted_counts["Waiting Time"] = pd.Categorical(melted_counts["Waiting Time"], categories=waiting_order, ordered=True)
-    melted_percents["Waiting Time"] = pd.Categorical(melted_percents["Waiting Time"], categories=waiting_order, ordered=True)
-
-    # Visualization section
-    tab1, tab2, tab3, tab4 = st.tabs(["Stacked Bar Charts", "Percentage Distribution", 
-                                      "Comparative Analysis", "Raw Data"])
-
-    with tab1:
-        st.subheader("Waiting Time Distribution (Counts)")
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-        
-        df_counts.set_index("Category").T.plot(kind='bar', stacked=True, ax=ax1, 
-                                             color=['#4C72B0', '#DD8452', '#55A868', '#C44E52', '#8172B3'])
-        ax1.set_title("Stacked Bar Chart (Counts)")
-        ax1.set_ylabel("Number of Respondents")
-        ax1.legend(title="Category", bbox_to_anchor=(1.05, 1), loc='upper left')
-        
-        df_percents.set_index("Category").T.plot(kind='bar', stacked=True, ax=ax2,
-                                              color=['#4C72B0', '#DD8452', '#55A868', '#C44E52', '#8172B3'])
-        ax2.set_title("Stacked Bar Chart (Percentages)")
-        ax2.set_ylabel("Percentage (%)")
-        ax2.legend(title="Category", bbox_to_anchor=(1.05, 1), loc='upper left')
-        
-        plt.tight_layout()
-        st.pyplot(fig)
-
-    with tab2:
-        st.subheader("Percentage Distribution by Category")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("Truck Drivers")
-            fig, ax = plt.subplots(figsize=(8, 6))
-            wedges, texts, autotexts = ax.pie(
-                df_percents.loc[0, "Less than 30 mins":"Over 5 hours"],
-                labels=waiting_order,
-                autopct='%1.1f%%',
-                colors=['#4C72B0', '#DD8452', '#55A868', '#C44E52', '#8172B3'],
-                startangle=90,
-                wedgeprops=dict(width=
+st.altair_chart(fig10 + labels10, use_container_width=True)
