@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
@@ -15,20 +16,24 @@ gender_data = {
         'None', 'None', 'None']
 }
 st.header("1. 🌍 Nationality & Regional Representation")
-st.dataframe(pd.DataFrame(gender_data))
+nat_df = pd.DataFrame(gender_data)
+st.dataframe(nat_df)
+fig_nat = px.bar(nat_df, x='Category', y='Total', title='Stakeholder Count by Category')
+st.plotly_chart(fig_nat)
 
 # 2. Gender Category
 gender_split = pd.DataFrame({
     'Category': ['Truck Drivers', 'Clearing Agents', 'Customs Officials', 'KPA Staff'],
     'Male': [700, 119, 7, 14],
-    'Female': [14, 5, 3, 8],
-    '% Male': [98.0, 96.0, 70.0, 63.6],
-    '% Female': [2.0, 4.0, 30.0, 36.4]
+    'Female': [14, 5, 3, 8]
 })
 st.header("2. 👤 Gender Distribution")
 st.dataframe(gender_split)
+fig_gender = px.bar(gender_split, x='Category', y=['Male', 'Female'], barmode='stack', title='Gender Breakdown')
+st.plotly_chart(fig_gender)
 
 # 3. Work Experience
+st.header("3. 💼 Work Experience")
 data_exp = pd.DataFrame({
     'Work Experience': ['<1 year', '1-5 years', '6-10 years', '>10 years'],
     'Truck Driver': [43, 210, 133, 328],
@@ -37,88 +42,80 @@ data_exp = pd.DataFrame({
     'KPA Staff': [2, 1, 8, 11],
     'Traffic Police': [4, 5, 0, 0]
 })
-st.header("3. 💼 Work Experience")
 st.dataframe(data_exp.set_index('Work Experience'))
 
 # 4. Gate Visit Frequency
+st.header("4. 🚪 Gate Visit Frequency")
 data_visits = pd.DataFrame({
     'Frequency': ['Daily', '2-3 times/week', 'Once a week', '1-3 times/month', '< Once a month'],
-    'Truck Driver': [285, 176, 105, 138, 10],
-    'Clearing Agents': [80, 35, 5, 4, 0],
-    'Custom Official': [4, 3, 1, 1, 1],
-    'Traffic Police': [9, 0, 0, 0, 0],
-    'KPA Staff': [8, 14, 0, 0, 0]
+    'Truck Driver': [285, 176, 105, 138, 10]
 })
-st.header("4. 🚪 Gate Visit Frequency")
 st.dataframe(data_visits.set_index('Frequency'))
+fig_visits = px.bar(data_visits, x='Frequency', y='Truck Driver', title='Truck Driver Gate Visit Frequency')
+st.plotly_chart(fig_visits)
 
 # 5. Traffic Congestion Experience
+st.header("5. 🚦 Traffic Congestion Experience")
 data_congestion = pd.DataFrame({
     'Experience': ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
-    'Truck Drivers': [15, 48, 216, 190, 245],
-    'Clearing Agents': [0, 6, 58, 39, 21]
+    'Truck Drivers': [15, 48, 216, 190, 245]
 })
-st.header("5. 🚦 Traffic Congestion Experience")
 st.dataframe(data_congestion.set_index('Experience'))
+fig_congestion = px.pie(data_congestion, values='Truck Drivers', names='Experience', title='Truck Driver Congestion Experience')
+st.plotly_chart(fig_congestion)
 
 # 6. Waiting Time per Visit
+st.header("6. ⏱ Waiting Time at Gates")
 data_wait = pd.DataFrame({
     'Time Category': ['<30 mins', '30 mins-1 hr', '1-2 hrs', '2-5 hrs', '>5 hrs'],
-    'Truck Drivers': [87, 98, 119, 185, 245],
-    'Clearing Agents': [27, 23, 26, 24, 24]
+    'Truck Drivers': [87, 98, 119, 185, 245]
 })
-st.header("6. ⏱ Waiting Time at Gates")
 st.dataframe(data_wait.set_index('Time Category'))
+fig_wait = px.bar(data_wait, x='Time Category', y='Truck Drivers', title='Waiting Time Distribution')
+st.plotly_chart(fig_wait)
 
 # 7. Gate Usage Distribution
+st.header("7. 🛣 Gate Usage Distribution")
 data_gate = pd.DataFrame({
     'Gate': ['Gate 24', 'Gate 18', 'Main Gate 9/10', 'ICD', 'Others (12,13,15,16)'],
-    'Truck Drivers': [475, 308, 93, 0, 0],
-    'Clearing Agents': [74, 63, 27, 21, 0],
-    'Customs Officials': [0, 0, 0, 10, 0],
-    'Traffic Police': [0, 0, 0, 9, 0],
-    'KPA Staff': [0, 0, 6, 12, 0]
+    'Truck Drivers': [475, 308, 93, 0, 0]
 })
-st.header("7. 🛣 Gate Usage Distribution")
 st.dataframe(data_gate.set_index('Gate'))
+fig_gate = px.bar(data_gate, x='Gate', y='Truck Drivers', title='Gate Usage by Truck Drivers')
+st.plotly_chart(fig_gate)
 
 # 8. Congestion Time Frequency
+st.header("8. 🕐 Time of Day with Most Congestion")
 data_time_congestion = pd.DataFrame({
     'Time': ['Morning', 'Midday', 'Afternoon', 'Evening'],
-    'Truck Drivers': [150, 219, 480, 368],
-    'Clearing Agents': [25, 22, 73, 76],
-    'Custom Officials': [0, 0, 7, 3],
-    'Traffic Police': [0, 0, 5, 5],
-    'KPA Staff': [0, 5, 13, 12]
+    'Truck Drivers': [150, 219, 480, 368]
 })
-st.header("8. 🕐 Time of Day with Most Congestion")
 st.dataframe(data_time_congestion.set_index('Time'))
+fig_time = px.bar(data_time_congestion, x='Time', y='Truck Drivers', title='Congestion Time Frequency')
+st.plotly_chart(fig_time)
 
 # 9. Causes of Traffic Congestion
+st.header("9. ❗ Causes of Traffic Congestion")
 data_causes = pd.DataFrame({
     'Cause': [
         'Slow gate processing', 'Slow security checks', 'Documentation delays', 
         'KRA gadget delay', 'Poor road', 'Incomplete docs', 'Limited lanes'
     ],
-    'Truck Drivers': [440, 377, 302, 316, 50, 40, 30],
-    'Clearing Agents': [73, 49, 76, 69, 0, 0, 0],
-    'Customs Officials': [0, 10, 10, 0, 0, 0, 0],
-    'Traffic Police': [0, 12, 0, 9, 0, 0, 0],
-    'KPA Staff': [0, 0, 10, 0, 0, 6, 10]
+    'Truck Drivers': [440, 377, 302, 316, 50, 40, 30]
 })
-st.header("9. ❗ Causes of Traffic Congestion")
 st.dataframe(data_causes.set_index('Cause'))
+fig_causes = px.bar(data_causes, x='Cause', y='Truck Drivers', title='Causes of Congestion')
+st.plotly_chart(fig_causes)
 
 # 10. Effects on Work
+st.header("10. 📉 Effects of Congestion on Work")
 data_effects = pd.DataFrame({
     'Effect': [
         'Longer working hours', 'Increased storage fees', 'Missed delivery schedules',
-        'Increased fuel costs', 'Increased turnaround times', 'Stress/Fatigue', 'Demurrage charges', 'Cargo stacking delays'
+        'Increased fuel costs', 'Increased turnaround times'
     ],
-    'Truck Drivers': [562, 386, 258, 305, 183, 0, 0, 0],
-    'Clearing Agents': [84, 50, 57, 39, 0, 76, 35, 0],
-    'Customs Officials': [0, 0, 0, 0, 0, 0, 0, 0],
-    'KPA Staff': [0, 12, 0, 0, 0, 0, 10, 13]
+    'Truck Drivers': [562, 386, 258, 305, 183]
 })
-st.header("10. 📉 Effects of Congestion on Work")
 st.dataframe(data_effects.set_index('Effect'))
+fig_effects = px.pie(data_effects, names='Effect', values='Truck Drivers', title='Effects of Congestion on Truck Drivers')
+st.plotly_chart(fig_effects)
