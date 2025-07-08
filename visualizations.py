@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import altair as alt
 
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
@@ -12,7 +14,7 @@ nat_df = pd.DataFrame({
 })
 nat_df["Percentage"] = nat_df["Total"] / nat_df["Total"].sum() * 100
 st.dataframe(nat_df)
-st.bar_chart(nat_df.set_index("Category")[["Total"]])
+st.bar_chart(nat_df.set_index("Category")["Total"])
 
 # 2. Gender Category
 st.header("2. 👤 Gender Distribution")
@@ -23,6 +25,7 @@ gender_split = pd.DataFrame({
 })
 gender_split['Total'] = gender_split['Male'] + gender_split['Female']
 gender_split['% Male'] = (gender_split['Male'] / gender_split['Total']) * 100
+gender_split['% Female'] = 100 - gender_split['% Male']
 st.dataframe(gender_split)
 st.bar_chart(gender_split.set_index("Category")[['Male', 'Female']])
 
@@ -34,7 +37,7 @@ data_exp = pd.DataFrame({
 })
 data_exp["Total"] = data_exp["Truck Driver"]
 data_exp["Percentage"] = data_exp["Truck Driver"] / data_exp["Truck Driver"].sum() * 100
-st.dataframe(data_exp.set_index('Work Experience'))
+st.dataframe(data_exp)
 st.bar_chart(data_exp.set_index('Work Experience')[['Truck Driver']])
 
 # 4. Gate Visit Frequency
@@ -44,7 +47,7 @@ data_visits = pd.DataFrame({
     'Truck Driver': [285, 176, 105, 138, 10]
 })
 data_visits["Percentage"] = data_visits['Truck Driver'] / data_visits['Truck Driver'].sum() * 100
-st.dataframe(data_visits.set_index('Frequency'))
+st.dataframe(data_visits)
 st.bar_chart(data_visits.set_index('Frequency')[['Truck Driver']])
 
 # 5. Traffic Congestion Experience
@@ -54,8 +57,13 @@ data_congestion = pd.DataFrame({
     'Truck Drivers': [15, 48, 216, 190, 245]
 })
 data_congestion["Percentage"] = data_congestion['Truck Drivers'] / data_congestion['Truck Drivers'].sum() * 100
-st.dataframe(data_congestion.set_index('Experience'))
-st.line_chart(data_congestion.set_index('Experience')[['Truck Drivers']])
+st.dataframe(data_congestion)
+fig5 = alt.Chart(data_congestion).mark_arc().encode(
+    theta=alt.Theta(field="Truck Drivers", type="quantitative"),
+    color=alt.Color(field="Experience", type="nominal"),
+    tooltip=['Experience', 'Truck Drivers', 'Percentage']
+).properties(title="Truck Driver Congestion Experience (Pie Chart)")
+st.altair_chart(fig5)
 
 # 6. Waiting Time per Visit
 st.header("6. ⏱ Waiting Time at Gates")
@@ -64,8 +72,13 @@ data_wait = pd.DataFrame({
     'Truck Drivers': [87, 98, 119, 185, 245]
 })
 data_wait["Percentage"] = data_wait['Truck Drivers'] / data_wait['Truck Drivers'].sum() * 100
-st.dataframe(data_wait.set_index('Time Category'))
-st.line_chart(data_wait.set_index('Time Category')[['Truck Drivers']])
+st.dataframe(data_wait)
+fig6 = alt.Chart(data_wait).mark_arc().encode(
+    theta=alt.Theta(field="Truck Drivers", type="quantitative"),
+    color=alt.Color(field="Time Category", type="nominal"),
+    tooltip=['Time Category', 'Truck Drivers', 'Percentage']
+).properties(title="Waiting Time Distribution (Pie Chart)")
+st.altair_chart(fig6)
 
 # 7. Gate Usage Distribution
 st.header("7. 🛣 Gate Usage Distribution")
@@ -74,7 +87,7 @@ data_gate = pd.DataFrame({
     'Truck Drivers': [475, 308, 93, 0, 0]
 })
 data_gate["Percentage"] = data_gate['Truck Drivers'] / data_gate['Truck Drivers'].sum() * 100
-st.dataframe(data_gate.set_index('Gate'))
+st.dataframe(data_gate)
 st.bar_chart(data_gate.set_index('Gate')[['Truck Drivers']])
 
 # 8. Congestion Time Frequency
@@ -84,7 +97,7 @@ data_time_congestion = pd.DataFrame({
     'Truck Drivers': [150, 219, 480, 368]
 })
 data_time_congestion["Percentage"] = data_time_congestion['Truck Drivers'] / data_time_congestion['Truck Drivers'].sum() * 100
-st.dataframe(data_time_congestion.set_index('Time'))
+st.dataframe(data_time_congestion)
 st.bar_chart(data_time_congestion.set_index('Time')[['Truck Drivers']])
 
 # 9. Causes of Traffic Congestion
@@ -97,7 +110,7 @@ data_causes = pd.DataFrame({
     'Truck Drivers': [440, 377, 302, 316, 50, 40, 30]
 })
 data_causes["Percentage"] = data_causes['Truck Drivers'] / data_causes['Truck Drivers'].sum() * 100
-st.dataframe(data_causes.set_index('Cause'))
+st.dataframe(data_causes)
 st.bar_chart(data_causes.set_index('Cause')[['Truck Drivers']])
 
 # 10. Effects on Work
@@ -110,5 +123,5 @@ data_effects = pd.DataFrame({
     'Truck Drivers': [562, 386, 258, 305, 183]
 })
 data_effects["Percentage"] = data_effects['Truck Drivers'] / data_effects['Truck Drivers'].sum() * 100
-st.dataframe(data_effects.set_index('Effect'))
+st.dataframe(data_effects)
 st.bar_chart(data_effects.set_index('Effect')[['Truck Drivers']])
