@@ -1,29 +1,24 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import altair as alt
 
-# Set page config and background style
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 
-st.markdown(
-    """
-    <style>
-        .main {
-            background-color: #f5f5f5;
-        }
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# Custom background
+st.markdown("""
+<style>
+    .main {
+        background-color: #f5f5f5;
+    }
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
 
-# Pie chart helper function
 def pie_chart(df, value_field, category_field, title):
     chart = alt.Chart(df).mark_arc(innerRadius=50).encode(
         theta=value_field,
@@ -53,11 +48,17 @@ fig1 = alt.Chart(nat_df).mark_bar().encode(
     tooltip=['Category', 'Total', 'Percentage']
 ).properties(title="Total Stakeholders by Category")
 
-labels1 = alt.Chart(nat_df).mark_text(dy=-15).encode(
+labels1 = alt.Chart(nat_df).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Category',
     y='Total',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
 
 st.altair_chart(fig1 + labels1, use_container_width=True)
@@ -86,11 +87,17 @@ fig2 = alt.Chart(long_gender).mark_bar().encode(
     tooltip=['Category', 'Gender', 'Count', 'Percentage']
 )
 
-labels2 = alt.Chart(long_gender).mark_text(dy=-15).encode(
+labels2 = alt.Chart(long_gender).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Category',
     y='Count',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
 
 st.altair_chart(fig2 + labels2, use_container_width=True)
@@ -151,12 +158,19 @@ fig7 = alt.Chart(data_gate).mark_bar().encode(
     tooltip=['Gate', 'Truck Drivers', 'Percentage']
 ).properties(title="Gate Usage Distribution")
 
-labels7 = alt.Chart(data_gate).mark_text(dy=-15).encode(
+labels7 = alt.Chart(data_gate).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Gate',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
+
 st.altair_chart(fig7 + labels7, use_container_width=True)
 
 # 8. Congestion Time Frequency
@@ -175,12 +189,19 @@ fig8 = alt.Chart(data_time_congestion).mark_bar().encode(
     tooltip=['Time', 'Truck Drivers', 'Percentage']
 ).properties(title="Congestion Time by Day Period")
 
-labels8 = alt.Chart(data_time_congestion).mark_text(dy=-15).encode(
+labels8 = alt.Chart(data_time_congestion).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Time',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
+
 st.altair_chart(fig8 + labels8, use_container_width=True)
 
 # 9. Causes of Traffic Congestion
@@ -202,12 +223,19 @@ fig9 = alt.Chart(data_causes).mark_bar().encode(
     tooltip=['Cause', 'Truck Drivers', 'Percentage']
 ).properties(title="Causes of Traffic Congestion")
 
-labels9 = alt.Chart(data_causes).mark_text(dy=-15).encode(
+labels9 = alt.Chart(data_causes).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Cause',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
+
 st.altair_chart(fig9 + labels9, use_container_width=True)
 
 # 10. Effects of Congestion
@@ -229,10 +257,17 @@ fig10 = alt.Chart(data_effects).mark_bar().encode(
     tooltip=['Effect', 'Truck Drivers', 'Percentage']
 ).properties(title="Effects of Congestion on Work")
 
-labels10 = alt.Chart(data_effects).mark_text(dy=-15).encode(
+labels10 = alt.Chart(data_effects).mark_text(
+    dy=-10,
+    size=13,
+    fontWeight='bold',
+    color='black',
+    stroke='white',
+    strokeWidth=2
+).encode(
     x='Effect',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f'),
-    color=alt.value('black')
+    text=alt.Text('Percentage:Q', format='.1f')
 )
+
 st.altair_chart(fig10 + labels10, use_container_width=True)
