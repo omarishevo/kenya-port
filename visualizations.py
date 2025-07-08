@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
@@ -18,8 +18,10 @@ gender_data = {
 st.header("1. 🌍 Nationality & Regional Representation")
 nat_df = pd.DataFrame(gender_data)
 st.dataframe(nat_df)
-fig_nat = px.bar(nat_df, x='Category', y='Total', title='Stakeholder Count by Category')
-st.plotly_chart(fig_nat)
+fig1, ax1 = plt.subplots()
+nat_df.plot(kind='bar', x='Category', y='Total', ax=ax1, legend=False, color='teal')
+plt.title("Total by Category")
+st.pyplot(fig1)
 
 # 2. Gender Category
 gender_split = pd.DataFrame({
@@ -29,8 +31,11 @@ gender_split = pd.DataFrame({
 })
 st.header("2. 👤 Gender Distribution")
 st.dataframe(gender_split)
-fig_gender = px.bar(gender_split, x='Category', y=['Male', 'Female'], barmode='stack', title='Gender Breakdown')
-st.plotly_chart(fig_gender)
+fig2, ax2 = plt.subplots()
+gender_split.set_index('Category')[['Male', 'Female']].plot(kind='bar', stacked=True, ax=ax2)
+plt.title("Gender Distribution by Stakeholder")
+plt.ylabel("Count")
+st.pyplot(fig2)
 
 # 3. Work Experience
 st.header("3. 💼 Work Experience")
@@ -43,6 +48,11 @@ data_exp = pd.DataFrame({
     'Traffic Police': [4, 5, 0, 0]
 })
 st.dataframe(data_exp.set_index('Work Experience'))
+fig3, ax3 = plt.subplots()
+data_exp.set_index('Work Experience').plot(kind='bar', ax=ax3)
+plt.title("Work Experience Distribution")
+plt.ylabel("Count")
+st.pyplot(fig3)
 
 # 4. Gate Visit Frequency
 st.header("4. 🚪 Gate Visit Frequency")
@@ -51,8 +61,11 @@ data_visits = pd.DataFrame({
     'Truck Driver': [285, 176, 105, 138, 10]
 })
 st.dataframe(data_visits.set_index('Frequency'))
-fig_visits = px.bar(data_visits, x='Frequency', y='Truck Driver', title='Truck Driver Gate Visit Frequency')
-st.plotly_chart(fig_visits)
+fig4, ax4 = plt.subplots()
+data_visits.plot(kind='bar', x='Frequency', y='Truck Driver', ax=ax4, legend=False)
+plt.title("Truck Driver Visit Frequency")
+plt.ylabel("Count")
+st.pyplot(fig4)
 
 # 5. Traffic Congestion Experience
 st.header("5. 🚦 Traffic Congestion Experience")
@@ -61,8 +74,11 @@ data_congestion = pd.DataFrame({
     'Truck Drivers': [15, 48, 216, 190, 245]
 })
 st.dataframe(data_congestion.set_index('Experience'))
-fig_congestion = px.pie(data_congestion, values='Truck Drivers', names='Experience', title='Truck Driver Congestion Experience')
-st.plotly_chart(fig_congestion)
+fig5, ax5 = plt.subplots()
+data_congestion.set_index('Experience').plot(kind='pie', y='Truck Drivers', autopct='%1.1f%%', ax=ax5)
+plt.ylabel("")
+plt.title("Truck Drivers Congestion Experience")
+st.pyplot(fig5)
 
 # 6. Waiting Time per Visit
 st.header("6. ⏱ Waiting Time at Gates")
@@ -71,8 +87,11 @@ data_wait = pd.DataFrame({
     'Truck Drivers': [87, 98, 119, 185, 245]
 })
 st.dataframe(data_wait.set_index('Time Category'))
-fig_wait = px.bar(data_wait, x='Time Category', y='Truck Drivers', title='Waiting Time Distribution')
-st.plotly_chart(fig_wait)
+fig6, ax6 = plt.subplots()
+data_wait.plot(kind='bar', x='Time Category', y='Truck Drivers', ax=ax6, legend=False)
+plt.title("Truck Drivers Waiting Time")
+plt.ylabel("Count")
+st.pyplot(fig6)
 
 # 7. Gate Usage Distribution
 st.header("7. 🛣 Gate Usage Distribution")
@@ -81,8 +100,11 @@ data_gate = pd.DataFrame({
     'Truck Drivers': [475, 308, 93, 0, 0]
 })
 st.dataframe(data_gate.set_index('Gate'))
-fig_gate = px.bar(data_gate, x='Gate', y='Truck Drivers', title='Gate Usage by Truck Drivers')
-st.plotly_chart(fig_gate)
+fig7, ax7 = plt.subplots()
+data_gate.plot(kind='bar', x='Gate', y='Truck Drivers', ax=ax7, legend=False)
+plt.title("Gate Usage Distribution")
+plt.ylabel("Count")
+st.pyplot(fig7)
 
 # 8. Congestion Time Frequency
 st.header("8. 🕐 Time of Day with Most Congestion")
@@ -91,8 +113,11 @@ data_time_congestion = pd.DataFrame({
     'Truck Drivers': [150, 219, 480, 368]
 })
 st.dataframe(data_time_congestion.set_index('Time'))
-fig_time = px.bar(data_time_congestion, x='Time', y='Truck Drivers', title='Congestion Time Frequency')
-st.plotly_chart(fig_time)
+fig8, ax8 = plt.subplots()
+data_time_congestion.plot(kind='bar', x='Time', y='Truck Drivers', ax=ax8, legend=False)
+plt.title("Congestion by Time of Day")
+plt.ylabel("Count")
+st.pyplot(fig8)
 
 # 9. Causes of Traffic Congestion
 st.header("9. ❗ Causes of Traffic Congestion")
@@ -104,8 +129,11 @@ data_causes = pd.DataFrame({
     'Truck Drivers': [440, 377, 302, 316, 50, 40, 30]
 })
 st.dataframe(data_causes.set_index('Cause'))
-fig_causes = px.bar(data_causes, x='Cause', y='Truck Drivers', title='Causes of Congestion')
-st.plotly_chart(fig_causes)
+fig9, ax9 = plt.subplots()
+data_causes.set_index('Cause').plot(kind='barh', ax=ax9, legend=False, color='salmon')
+plt.title("Causes of Traffic Congestion")
+plt.xlabel("Count")
+st.pyplot(fig9)
 
 # 10. Effects on Work
 st.header("10. 📉 Effects of Congestion on Work")
@@ -117,5 +145,8 @@ data_effects = pd.DataFrame({
     'Truck Drivers': [562, 386, 258, 305, 183]
 })
 st.dataframe(data_effects.set_index('Effect'))
-fig_effects = px.pie(data_effects, names='Effect', values='Truck Drivers', title='Effects of Congestion on Truck Drivers')
-st.plotly_chart(fig_effects)
+fig10, ax10 = plt.subplots()
+data_effects.set_index('Effect').plot(kind='bar', ax=ax10, legend=False, color='purple')
+plt.title("Effects of Congestion on Work")
+plt.ylabel("Count")
+st.pyplot(fig10)
