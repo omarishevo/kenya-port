@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
@@ -28,10 +27,6 @@ gender_split = pd.DataFrame({
 })
 st.header("2. 👤 Gender Distribution")
 st.dataframe(gender_split)
-fig, ax = plt.subplots()
-gender_split.set_index('Category')[['Male', 'Female']].plot(kind='bar', stacked=True, ax=ax, colormap='Set3')
-plt.title("Gender Distribution by Stakeholder")
-st.pyplot(fig)
 
 # 3. Work Experience
 data_exp = pd.DataFrame({
