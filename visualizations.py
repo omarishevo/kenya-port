@@ -17,7 +17,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
+st.title("📊 Kenya Ports Authority: KPA Gates congestion Dashboard Report")
 
 # Standard Pie Chart function with percentage label formatting
 def pie_chart(df, value_field, category_field, title):
@@ -36,7 +36,7 @@ def pie_chart(df, value_field, category_field, title):
     return chart + text
 
 # 1. Nationality Distribution
-st.header("1. 🌍 Nationality & Regional Representation")
+st.header("1. 🌍 Nationality & population breakdown")
 nat_df = pd.DataFrame({
     'Category': ['Truck Driver', 'Clearing Agents', 'Custom Officials', 'KPA Staffs', 'Traffic Police'],
     'Total': [714, 113, 10, 22, 9],
@@ -65,7 +65,7 @@ labels1 = alt.Chart(nat_df).mark_text(
 st.altair_chart(fig1 + labels1, use_container_width=True)
 
 # 2. Gender Category
-st.header("2. 👤 Gender Distribution")
+st.header("2. 👤 Respondent by Gender")
 gender_split = pd.DataFrame({
     'Category': ['Truck Drivers', 'Clearing Agents', 'Customs Officials', 'KPA Staff'],
     'Male': [700, 119, 7, 14],
@@ -99,7 +99,7 @@ labels2 = alt.Chart(long_gender).mark_text(
 st.altair_chart(fig2 + labels2, use_container_width=True)
 
 # 3. Work Experience
-st.header("3. 💼 Work Experience")
+st.header("3. 💼 Work Experience of Respondents")
 data_exp = pd.DataFrame({
     'Work Experience': ['<1 year', '1-5 years', '6-10 years', '>10 years'],
     'Truck Driver': [43, 210, 133, 328]
@@ -117,7 +117,7 @@ st.dataframe(data_visits)
 st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency"))
 
 # 5. Traffic Congestion Experience
-st.header("5. 🚦 Traffic Congestion Experience")
+st.header("5. 🚦 How often do you experience traffic and congestion at kpa gates")
 data_congestion = pd.DataFrame({
     'Experience': ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
     'Truck Drivers': [15, 48, 216, 190, 245]
@@ -126,7 +126,7 @@ st.dataframe(data_congestion)
 st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Congestion Experience"))
 
 # 6. Waiting Time per Visit
-st.header("6. ⏱ Waiting Time at Gates")
+st.header("6. ⏱ How long do you wait at KPA gates per visit")
 data_wait = pd.DataFrame({
     'Time Category': ['<30 mins', '30 mins-1 hr', '1-2 hrs', '2-5 hrs', '>5 hrs'],
     'Truck Drivers': [87, 98, 119, 185, 245]
@@ -135,7 +135,7 @@ st.dataframe(data_wait)
 st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution"))
 
 # 7. Gate Usage Distribution
-st.header("7. 🛣 Gate Usage Distribution")
+st.header("7. 🛣 Gate Usage by Respondents")
 data_gate = pd.DataFrame({
     'Gate': ['Gate 24', 'Gate 18', 'Main Gate 9/10', 'ICD', 'Others (12,13,15,16)'],
     'Truck Drivers': [475, 308, 93, 0, 0]
@@ -193,7 +193,7 @@ labels8 = alt.Chart(data_time_congestion).mark_text(
 st.altair_chart(fig8 + labels8, use_container_width=True)
 
 # 9. Causes of Traffic Congestion
-st.header("9. ❗ Causes of Traffic Congestion")
+st.header("9. ❗ Causes of Traffic Congestion by respondnts")
 data_causes = pd.DataFrame({
     'Cause': [
         'Slow gate processing', 'Slow security checks', 'Documentation delays',
@@ -225,7 +225,7 @@ labels9 = alt.Chart(data_causes).mark_text(
 st.altair_chart(fig9 + labels9, use_container_width=True)
 
 # 10. Effects of Congestion
-st.header("10. 📉 Effects of Congestion on Work")
+st.header("10. 📉 Effects of Congestion on Work by respondets")
 data_effects = pd.DataFrame({
     'Effect': [
         'Longer working hours', 'Increased storage fees', 'Missed delivery schedules',
