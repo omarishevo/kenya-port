@@ -14,7 +14,7 @@ def get_base64_image(image_path):
         st.warning(f"⚠️ Logo file not found at: `{image_path}`")
         return ""
 
-logo_base64 = get_base64_image("kpa_logo.png.jpg")  # Relative path for GitHub
+logo_base64 = get_base64_image("kpa_logo.png")  # Relative path for GitHub
 
 # === Styled Background with KPA Logo ===
 if logo_base64:
