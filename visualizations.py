@@ -17,7 +17,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 Kenya Ports Authority: KPA Gates congestion Dashboard Report")
+st.title("📊 Kenya Ports Authority: KPA Gates Congestion Dashboard Report")
 
 # Standard Pie Chart function with percentage label formatting
 def pie_chart(df, value_field, category_field, title):
@@ -36,7 +36,7 @@ def pie_chart(df, value_field, category_field, title):
     return chart + text
 
 # 1. Nationality Distribution
-st.header("1. 🌍 Nationality & population breakdown")
+st.header("1. 🌍 Nationality and Population Breakdown")
 nat_df = pd.DataFrame({
     'Category': ['Truck Driver', 'Clearing Agents', 'Custom Officials', 'KPA Staffs', 'Traffic Police'],
     'Total': [714, 113, 10, 22, 9],
@@ -65,7 +65,7 @@ labels1 = alt.Chart(nat_df).mark_text(
 st.altair_chart(fig1 + labels1, use_container_width=True)
 
 # 2. Gender Category
-st.header("2. 👤 Respondent by Gender")
+st.header("2. 👤 Gender Distribution of Respondents")
 gender_split = pd.DataFrame({
     'Category': ['Truck Drivers', 'Clearing Agents', 'Customs Officials', 'KPA Staff'],
     'Male': [700, 119, 7, 14],
@@ -108,7 +108,7 @@ st.dataframe(data_exp)
 st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience"))
 
 # 4. Gate Visit Frequency
-st.header("4. 🚪 Gate Visit Frequency")
+st.header("4. 🚪 Gate Visit Frequency of Truck Drivers")
 data_visits = pd.DataFrame({
     'Frequency': ['Daily', '2-3 times/week', 'Once a week', '1-3 times/month', '< Once a month'],
     'Truck Driver': [285, 176, 105, 138, 10]
@@ -117,7 +117,7 @@ st.dataframe(data_visits)
 st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency"))
 
 # 5. Traffic Congestion Experience
-st.header("5. 🚦 How often do you experience traffic and congestion at kpa gates")
+st.header("5. 🚦 Frequency of Traffic Congestion Experienced at KPA Gates")
 data_congestion = pd.DataFrame({
     'Experience': ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
     'Truck Drivers': [15, 48, 216, 190, 245]
@@ -126,7 +126,7 @@ st.dataframe(data_congestion)
 st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Congestion Experience"))
 
 # 6. Waiting Time per Visit
-st.header("6. ⏱ How long do you wait at KPA gates per visit")
+st.header("6. ⏱ Waiting Time at KPA Gates per Visit")
 data_wait = pd.DataFrame({
     'Time Category': ['<30 mins', '30 mins-1 hr', '1-2 hrs', '2-5 hrs', '>5 hrs'],
     'Truck Drivers': [87, 98, 119, 185, 245]
@@ -135,7 +135,7 @@ st.dataframe(data_wait)
 st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution"))
 
 # 7. Gate Usage Distribution
-st.header("7. 🛣 Gate Usage by Respondents")
+st.header("7. 🛣 Gate Usage Distribution Among Truck Drivers")
 data_gate = pd.DataFrame({
     'Gate': ['Gate 24', 'Gate 18', 'Main Gate 9/10', 'ICD', 'Others (12,13,15,16)'],
     'Truck Drivers': [475, 308, 93, 0, 0]
@@ -164,7 +164,7 @@ labels7 = alt.Chart(data_gate).mark_text(
 st.altair_chart(fig7 + labels7, use_container_width=True)
 
 # 8. Congestion Time Frequency
-st.header("8. 🕐 Time of Day with Most Congestion")
+st.header("8. 🕐 Time of Day with Most Reported Congestion")
 data_time_congestion = pd.DataFrame({
     'Time': ['Morning', 'Midday', 'Afternoon', 'Evening'],
     'Truck Drivers': [150, 219, 480, 368]
@@ -193,7 +193,7 @@ labels8 = alt.Chart(data_time_congestion).mark_text(
 st.altair_chart(fig8 + labels8, use_container_width=True)
 
 # 9. Causes of Traffic Congestion
-st.header("9. ❗ Causes of Traffic Congestion by respondnts")
+st.header("9. ❗ Reported Causes of Traffic Congestion")
 data_causes = pd.DataFrame({
     'Cause': [
         'Slow gate processing', 'Slow security checks', 'Documentation delays',
@@ -225,7 +225,7 @@ labels9 = alt.Chart(data_causes).mark_text(
 st.altair_chart(fig9 + labels9, use_container_width=True)
 
 # 10. Effects of Congestion
-st.header("10. 📉 Effects of Congestion on Work by respondets")
+st.header("10. 📉 Reported Effects of Congestion on Work")
 data_effects = pd.DataFrame({
     'Effect': [
         'Longer working hours', 'Increased storage fees', 'Missed delivery schedules',
