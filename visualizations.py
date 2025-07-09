@@ -1,36 +1,51 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import base64
 
 st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 
-# === KPA Styling with Full Background Logo ===
-st.markdown("""
+# === Load and Encode the KPA Logo ===
+def get_base64_image(image_path):
+    with open(image_path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+logo_base64 = get_base64_image("C:/Users/Administrator/Pictures/kpa_logo.png.jpg")
+
+# === Styled Background with KPA Logo ===
+st.markdown(f"""
 <style>
-    .stApp {
-        background-image: url(r"C:\Users\Administrator\Pictures\kpa_logo.png.jpg");
+    .stApp {{
+        background-image: url("data:image/png;base64,{logo_base64}");
         background-repeat: no-repeat;
         background-attachment: fixed;
         background-position: center;
         background-size: 600px 600px;
-    }
-    .block-container {
+    }}
+    .block-container {{
         padding-top: 2rem;
         padding-bottom: 2rem;
-    }
-    h1, h2, h3, h4 {
+    }}
+    h1, h2, h3, h4 {{
         color: #FFCC00 !important;
-    }
-    .stDataFrame {
+    }}
+    .stDataFrame {{
         background-color: white;
         color: black;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# === Title Header ===
-st.markdown("### 📊 Kenya Ports Authority: KPA Gates Congestion Dashboard Report")
-st.markdown("""<hr style="border-top: 3px solid #FFCC00;">""", unsafe_allow_html=True)
+# === Header with Downloadable Logo ===
+st.markdown(f"""
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h1>📊 Kenya Ports Authority: KPA Gates Congestion Dashboard Report</h1>
+        <a href="data:image/png;base64,{logo_base64}" download="KPA_Logo.png">
+            <img src="data:image/png;base64,{logo_base64}" width="120" title="Download KPA Logo">
+        </a>
+    </div>
+    <hr style="border-top: 3px solid #FFCC00;">
+""", unsafe_allow_html=True)
 
 # === Pie Chart Function ===
 def pie_chart(df, value_field, category_field, title):
