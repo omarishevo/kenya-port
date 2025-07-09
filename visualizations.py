@@ -35,13 +35,13 @@ logo_base64 = """
 iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAAAVFBMVEX///8AAAD09PTt7e3Z2dnGxsZ3d3d/f3+AgIB+fn7v7+/R0dGe3t7X19epqanIyMje3t5vb29cXFzW1tbAwMBgYGDq6uqUlJSWlpapqamOjo5ISEiioqKmpqZubm6M2t/gAAAHcUlEQVRoge2a23KrMBBFQRtS4SIdV2r7f7uD7aWHRhIRRaHaZn93rSaSLKG0mTyeTySRJkiRJkiRJkhKf13hRZ6pON6P1bX+Zqt9L1OqaP32XaS4nw1iK8BfxWZ6N0N8wM9o0vO1rxrhOaR9B38Gl9rDn5JkufEWB7FOz/CUM4x9NvkpVuvClnKNyP6Tnrp4j6b4+cmEod1nN6/OwRdy0cHsk1noyblz9CMniAfF0H2MPPoZ2cv1LGzKXM0xzkttrvQXYlrx+6xGMdYEmxb7c8ikofv86vwDA5ZXEVfnkO1LsyuSGN8Tpgie/SCUjY9M+xtB1cI+Q/dnMd0iYe4mMspkm+xVmS/k/0HwwuQ/xYYXdwKzpqTt0xg/XXcz9Y4aVEdku2KvlEt+Rh1zXt8vPdz7PyEY+wCj7T4eV1EPprk8+gAcIfPO+SP42GVHMXgvsNXYWNmW7z8lt64aM7xZjbf3GTL1tGnTbxy6HrEXlml/N3iAfjyA/H3sK8I45nXhHnx9jwY7WMeMeOeYPnOZ8eZIGL4+lrsd0uy5nvGfmqvNP/g14C0D/H3MPoIIfYf0L/nP9fgo+2+E4v7wgoP+/rDi35HDcvRbq+7oK54G2GReGc31XfqBa5HqZTjB46wvZkZ7Jqv+4L8/hcrF2j/QAAAAASUVORK5CYII=
 """
 
-# === Title with Logo and Download Link ===
+# === Title with Logo on the Left and Download Link ===
 st.markdown(f"""
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <h1>📊 Kenya Ports Authority: KPA Gates Congestion Dashboard Report</h1>
+    <div style="display: flex; align-items: center; gap: 20px;">
         <a href="data:image/png;base64,{logo_base64}" download="KPA_Logo.png">
-            <img src="data:image/png;base64,{logo_base64}" width="120" title="Download KPA Logo">
+            <img src="data:image/png;base64,{logo_base64}" width="100" title="Download KPA Logo">
         </a>
+        <h1 style="margin: 0;">📊 Kenya Ports Authority: KPA Gates Congestion Dashboard Report</h1>
     </div>
     <hr style="border-top: 3px solid #FFCC00;">
 """, unsafe_allow_html=True)
@@ -61,7 +61,7 @@ def pie_chart(df, value_field, category_field, title):
     )
     return chart + text
 
-# === 1. Nationality Distribution ===
+# === Section 1: Nationality Distribution ===
 st.header("1. 🌍 Nationality and Population Breakdown")
 nat_df = pd.DataFrame({
     'Category': ['Truck Driver', 'Clearing Agents', 'Custom Officials', 'KPA Staffs', 'Traffic Police'],
@@ -90,7 +90,7 @@ labels1 = alt.Chart(nat_df).mark_text(
 
 st.altair_chart(fig1 + labels1, use_container_width=True)
 
-# === 2. Gender Category ===
+# === Section 2: Gender Distribution ===
 st.header("2. 👤 Gender Distribution of Respondents")
 gender_split = pd.DataFrame({
     'Category': ['Truck Drivers', 'Clearing Agents', 'Customs Officials', 'KPA Staff'],
@@ -124,7 +124,8 @@ labels2 = alt.Chart(long_gender).mark_text(
 
 st.altair_chart(fig2 + labels2, use_container_width=True)
 
-# === 3. Work Experience ===
+# === Section 3–10 ===
+# Section 3: Work Experience
 st.header("3. 💼 Work Experience of Respondents")
 data_exp = pd.DataFrame({
     'Work Experience': ['<1 year', '1-5 years', '6-10 years', '>10 years'],
@@ -133,7 +134,7 @@ data_exp = pd.DataFrame({
 st.dataframe(data_exp)
 st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience"))
 
-# === 4. Gate Visit Frequency ===
+# Section 4: Gate Visit Frequency
 st.header("4. 🚪 Gate Visit Frequency of Truck Drivers")
 data_visits = pd.DataFrame({
     'Frequency': ['Daily', '2-3 times/week', 'Once a week', '1-3 times/month', '< Once a month'],
@@ -142,7 +143,7 @@ data_visits = pd.DataFrame({
 st.dataframe(data_visits)
 st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency"))
 
-# === 5. Congestion Experience ===
+# Section 5: Congestion Experience
 st.header("5. 🚦 Frequency of Traffic Congestion Experienced at KPA Gates")
 data_congestion = pd.DataFrame({
     'Experience': ['Never', 'Rarely', 'Sometimes', 'Often', 'Always'],
@@ -151,7 +152,7 @@ data_congestion = pd.DataFrame({
 st.dataframe(data_congestion)
 st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Congestion Experience"))
 
-# === 6. Waiting Time per Visit ===
+# Section 6: Waiting Time per Visit
 st.header("6. ⏱ Waiting Time at KPA Gates per Visit")
 data_wait = pd.DataFrame({
     'Time Category': ['<30 mins', '30 mins-1 hr', '1-2 hrs', '2-5 hrs', '>5 hrs'],
@@ -160,7 +161,7 @@ data_wait = pd.DataFrame({
 st.dataframe(data_wait)
 st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution"))
 
-# === 7. Gate Usage Distribution ===
+# Section 7: Gate Usage Distribution
 st.header("7. 🛣 Gate Usage Distribution Among Truck Drivers")
 data_gate = pd.DataFrame({
     'Gate': ['Gate 24', 'Gate 18', 'Main Gate 9/10', 'ICD', 'Others (12,13,15,16)'],
@@ -189,7 +190,7 @@ labels7 = alt.Chart(data_gate).mark_text(
 
 st.altair_chart(fig7 + labels7, use_container_width=True)
 
-# === 8. Congestion Time Frequency ===
+# Section 8: Congestion Time Frequency
 st.header("8. 🕐 Time of Day with Most Reported Congestion")
 data_time_congestion = pd.DataFrame({
     'Time': ['Morning', 'Midday', 'Afternoon', 'Evening'],
@@ -218,7 +219,7 @@ labels8 = alt.Chart(data_time_congestion).mark_text(
 
 st.altair_chart(fig8 + labels8, use_container_width=True)
 
-# === 9. Causes of Traffic Congestion ===
+# Section 9: Causes of Congestion
 st.header("9. ❗ Reported Causes of Traffic Congestion")
 data_causes = pd.DataFrame({
     'Cause': [
@@ -250,7 +251,7 @@ labels9 = alt.Chart(data_causes).mark_text(
 
 st.altair_chart(fig9 + labels9, use_container_width=True)
 
-# === 10. Effects of Congestion ===
+# Section 10: Effects of Congestion
 st.header("10. 📉 Reported Effects of Congestion on Work")
 data_effects = pd.DataFrame({
     'Effect': [
