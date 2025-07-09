@@ -20,7 +20,7 @@ st.markdown("""
 st.title("📊 Kenya Ports Authority: Gate Traffic Data Summary")
 
 def pie_chart(df, value_field, category_field, title):
-    chart = alt.Chart(df).mark_arc(innerRadius=50).encode(
+    chart = alt.Chart(df).mark_arc().encode(  # changed to standard pie
         theta=value_field,
         color=category_field,
         tooltip=[category_field, value_field, 'Percentage']
@@ -28,7 +28,7 @@ def pie_chart(df, value_field, category_field, title):
 
     text = alt.Chart(df).mark_text(radius=100, size=12, color='black').encode(
         theta=alt.Theta(value_field, stack=True),
-        text=alt.Text('Percentage:Q', format='.1f')
+        text=alt.Text('Percentage:Q', format='.1f%')  # added % sign
     )
     return chart + text
 
@@ -58,7 +58,7 @@ labels1 = alt.Chart(nat_df).mark_text(
 ).encode(
     x='Category',
     y='Total',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig1 + labels1, use_container_width=True)
@@ -97,7 +97,7 @@ labels2 = alt.Chart(long_gender).mark_text(
 ).encode(
     x='Category',
     y='Count',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig2 + labels2, use_container_width=True)
@@ -110,7 +110,7 @@ data_exp = pd.DataFrame({
 })
 data_exp["Percentage"] = data_exp["Truck Driver"] / data_exp["Truck Driver"].sum() * 100
 st.dataframe(data_exp)
-st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience (Pie Chart)"))
+st.altair_chart(pie_chart(data_exp, 'Truck Driver', 'Work Experience', "Truck Driver Work Experience"))
 
 # 4. Gate Visit Frequency
 st.header("4. 🚪 Gate Visit Frequency")
@@ -120,7 +120,7 @@ data_visits = pd.DataFrame({
 })
 data_visits["Percentage"] = data_visits['Truck Driver'] / data_visits['Truck Driver'].sum() * 100
 st.dataframe(data_visits)
-st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency (Pie Chart)"))
+st.altair_chart(pie_chart(data_visits, 'Truck Driver', 'Frequency', "Gate Visit Frequency"))
 
 # 5. Traffic Congestion Experience
 st.header("5. 🚦 Traffic Congestion Experience")
@@ -130,7 +130,7 @@ data_congestion = pd.DataFrame({
 })
 data_congestion["Percentage"] = data_congestion['Truck Drivers'] / data_congestion['Truck Drivers'].sum() * 100
 st.dataframe(data_congestion)
-st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Truck Driver Congestion Experience (Pie Chart)"))
+st.altair_chart(pie_chart(data_congestion, 'Truck Drivers', 'Experience', "Truck Driver Congestion Experience"))
 
 # 6. Waiting Time per Visit
 st.header("6. ⏱ Waiting Time at Gates")
@@ -140,7 +140,7 @@ data_wait = pd.DataFrame({
 })
 data_wait["Percentage"] = data_wait['Truck Drivers'] / data_wait['Truck Drivers'].sum() * 100
 st.dataframe(data_wait)
-st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution (Pie Chart)"))
+st.altair_chart(pie_chart(data_wait, 'Truck Drivers', 'Time Category', "Waiting Time Distribution"))
 
 # 7. Gate Usage Distribution
 st.header("7. 🛣 Gate Usage Distribution")
@@ -168,7 +168,7 @@ labels7 = alt.Chart(data_gate).mark_text(
 ).encode(
     x='Gate',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig7 + labels7, use_container_width=True)
@@ -199,7 +199,7 @@ labels8 = alt.Chart(data_time_congestion).mark_text(
 ).encode(
     x='Time',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig8 + labels8, use_container_width=True)
@@ -233,7 +233,7 @@ labels9 = alt.Chart(data_causes).mark_text(
 ).encode(
     x='Cause',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig9 + labels9, use_container_width=True)
@@ -267,7 +267,7 @@ labels10 = alt.Chart(data_effects).mark_text(
 ).encode(
     x='Effect',
     y='Truck Drivers',
-    text=alt.Text('Percentage:Q', format='.1f')
+    text=alt.Text('Percentage:Q', format='.1f%')
 )
 
 st.altair_chart(fig10 + labels10, use_container_width=True)
