@@ -8,7 +8,7 @@ st.set_page_config(page_title="KPA Full Traffic Analysis", layout="wide")
 st.markdown("""
 <style>
     .stApp {
-        background-image: url("kpa_logo.png");
+        background-image: url("C:\Users\Administrator\Pictures\kpa_logo.png.jpg");
         background-repeat: no-repeat;
         background-attachment: fixed;
         background-position: center;
