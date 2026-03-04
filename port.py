@@ -5,10 +5,8 @@ Research Report: Vehicle Traffic and Congestion at KPA Gates (June 2025)
 Kenya Ports Authority – Policy and Research Section
 
 HOW TO RUN:
-    pip install streamlit pandas scikit-learn matplotlib seaborn plotly
+    pip install streamlit pandas scikit-learn matplotlib seaborn plotly openpyxl
     streamlit run kpa_traffic_app.py
-
-Place COMBINED_DATASETS.csv in the same directory as this script.
 """
 
 import streamlit as st
@@ -17,6 +15,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import io
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -116,16 +115,119 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# DATA LOADING
+# DATA LOADING — FILE UPLOAD
 # ============================================================
 @st.cache_data
-def load_data():
-    try:
-        df = pd.read_csv("COMBINED_DATASETS.csv")
-    except FileNotFoundError:
-        st.error("⚠️  COMBINED_DATASETS.csv not found. Place it in the same folder as this script.")
-        st.stop()
-    return df
+def load_csv(file_bytes):
+    return pd.read_csv(io.BytesIO(file_bytes))
+
+@st.cache_data
+def combine_excels(file_bytes_dict):
+    """Combine multiple raw Excel files into one dataset."""
+    source_map = {
+        "clearing": "CLEARING_AGENTS",
+        "custom":   "CUSTOM",
+        "kpa":      "KPA_STAFF",
+        "traffic":  "TRAFFIC_POLICE",
+        "truck":    "TRUCK",
+    }
+    dfs = []
+    for key, file_bytes in file_bytes_dict.items():
+        source = source_map.get(key, key.upper())
+        df = pd.read_excel(io.BytesIO(file_bytes), header=None)
+        df.insert(0, "Source_Dataset", source)
+        dfs.append(df)
+    combined = pd.concat(dfs, ignore_index=True, sort=False)
+    # Promote first data row as header for non-clearing sheets
+    return combined
+
+def show_upload_screen():
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#003087,#0056b3);padding:2rem;
+                border-radius:14px;color:white;text-align:center;margin-bottom:1.5rem;">
+        <h1 style="margin:0;font-size:2rem;">🚢 KPA Traffic Analytics</h1>
+        <p style="opacity:.85;margin:.5rem 0 0;">Kenya Ports Authority · June 2025 Research Report</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### 📂 Upload Your Dataset to Get Started")
+
+    tab_csv, tab_excel = st.tabs(["📄 Upload Combined CSV", "📊 Upload Raw Excel Files"])
+
+    with tab_csv:
+        st.markdown("""
+        <div style="background:#f0f6ff;border-left:4px solid #003087;padding:.8rem 1rem;
+                    border-radius:6px;margin-bottom:1rem;">
+        Upload the <b>COMBINED_DATASETS.csv</b> file generated from the five original Excel datasets.
+        </div>
+        """, unsafe_allow_html=True)
+        uploaded_csv = st.file_uploader(
+            "Drop COMBINED_DATASETS.csv here",
+            type=["csv"],
+            key="csv_uploader",
+            help="The combined CSV file from all 5 datasets"
+        )
+        if uploaded_csv:
+            with st.spinner("Loading dataset..."):
+                df = load_csv(uploaded_csv.read())
+            st.success(f"✅ Loaded **{len(df):,} rows × {len(df.columns)} columns** from {uploaded_csv.name}")
+            st.session_state["df"] = df
+            st.rerun()
+
+    with tab_excel:
+        st.markdown("""
+        <div style="background:#f0f6ff;border-left:4px solid #003087;padding:.8rem 1rem;
+                    border-radius:6px;margin-bottom:1rem;">
+        Upload all <b>5 original Excel files</b> together. They will be auto-combined.
+        </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            f_truck    = st.file_uploader("🚛 Truck Dataset",          type=["xlsx"], key="truck")
+            f_clearing = st.file_uploader("📋 Clearing Agents Dataset", type=["xlsx"], key="clearing")
+            f_custom   = st.file_uploader("🏛️ Custom/KRA Dataset",      type=["xlsx"], key="custom")
+        with col2:
+            f_kpa      = st.file_uploader("👷 KPA Staff Dataset",       type=["xlsx"], key="kpa")
+            f_traffic  = st.file_uploader("🚔 Traffic Police Dataset",  type=["xlsx"], key="traffic")
+
+        files_uploaded = {k: f for k, f in {
+            "truck": f_truck, "clearing": f_clearing,
+            "custom": f_custom, "kpa": f_kpa, "traffic": f_traffic
+        }.items() if f is not None}
+
+        if files_uploaded:
+            st.info(f"📁 {len(files_uploaded)}/5 files uploaded: {', '.join(files_uploaded.keys())}")
+
+        if len(files_uploaded) == 5:
+            if st.button("🔗 Combine & Load All Files", use_container_width=True):
+                with st.spinner("Combining datasets..."):
+                    file_bytes_dict = {k: f.read() for k, f in files_uploaded.items()}
+                    df = combine_excels(file_bytes_dict)
+                st.success(f"✅ Combined **{len(df):,} rows × {len(df.columns)} columns** from 5 Excel files")
+                st.session_state["df"] = df
+                st.rerun()
+        elif files_uploaded:
+            st.warning(f"Please upload all 5 files ({5 - len(files_uploaded)} remaining).")
+
+    # Demo note
+    st.markdown("""
+    ---
+    <div style="background:#fff8e1;border-left:4px solid #ff9800;padding:.8rem 1rem;
+                border-radius:6px;font-size:.88rem;">
+    <b>💡 Tip:</b> The Combined CSV is preferred for fastest loading.
+    You can generate it from the 5 Excel files using the <b>Upload Raw Excel Files</b> tab above,
+    or by running the provided <code>generate_csv.py</code> script locally.
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
+
+
+# ── Route: show uploader or load from session ────────────────────────────────
+if "df" not in st.session_state:
+    show_upload_screen()
+
+df_raw = st.session_state["df"]
 
 @st.cache_data
 def get_truck_data(df):
@@ -228,7 +330,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Load
-df_raw   = load_data()
+# ── Initialize data from session state ──────────────────────────────────────
 trucks   = get_truck_data(df_raw)
 sources  = get_all_sources(df_raw)
 df_ml, feature_cols = prepare_ml_features(trucks)
@@ -237,8 +339,7 @@ df_ml, feature_cols = prepare_ml_features(trucks)
 # SIDEBAR
 # ============================================================
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/Kenya_Ports_Authority_logo.svg/200px-Kenya_Ports_Authority_logo.svg.png",
-             use_column_width=True) if False else st.markdown("### 🚢 KPA Analytics")
+    st.markdown("### 🚢 KPA Analytics")
     st.markdown("---")
     page = st.radio("Navigate", [
         "📊 Executive Dashboard",
@@ -257,6 +358,10 @@ with st.sidebar:
     st.markdown(f"- KPA Staff: **{len(sources['KPA_STAFF'])}**")
     st.markdown(f"- Customs Officials: **{len(sources['CUSTOM'])}**")
     st.markdown(f"- Traffic Police: **{len(sources['TRAFFIC_POLICE'])}**")
+    st.markdown("---")
+    if st.button("🔄 Upload New Dataset", use_container_width=True):
+        del st.session_state["df"]
+        st.rerun()
 
 # ============================================================
 # PAGE 1 — EXECUTIVE DASHBOARD
